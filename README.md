@@ -1,7 +1,5 @@
 # Note App Frontend
 
-![Note App Banner](static/banner.png)
-
 This is the frontend for a simple note-taking application, built with SvelteKit. It allows users to create, view, edit, and delete notes, organized in a hierarchical file system-like structure. It communicates with a separate Rust-based backend application for all data persistence.
 
 ## Features
