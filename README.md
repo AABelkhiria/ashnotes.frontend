@@ -1,6 +1,6 @@
-# Note App Frontend
+# Note App
 
-This is the frontend for a simple note-taking application, built with SvelteKit. It allows users to create, view, edit, and delete notes, organized in a hierarchical file system-like structure. It communicates with a separate Rust-based backend application for all data persistence.
+This is a simple note-taking application, built with SvelteKit. It allows users to create, view, edit, and delete notes, organized in a hierarchical file system-like structure. The backend is built with SvelteKit as well, using API routes.
 
 ## Features
 
@@ -22,16 +22,13 @@ This is the frontend for a simple note-taking application, built with SvelteKit.
 
 To set up the project locally:
 
-1.  **Backend Setup**:
-    This frontend requires a running backend server. Please refer to the `backend_readme.md` file in the project root for instructions on how to set up and run the Rust backend application. Ensure the backend is running on `http://localhost:3000` (or configure the frontend's `backendUrl` accordingly).
-
-2.  **Install Frontend Dependencies**:
+1.  **Install Dependencies**:
 
     ```bash
     npm install
     ```
 
-3.  **Start Development Server**:
+2.  **Start Development Server**:
     ```bash
     npm run dev
     ```

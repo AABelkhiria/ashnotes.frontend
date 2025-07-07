@@ -1,15 +1,13 @@
 # Application Architecture and Design
 
-This document provides a detailed explanation of the Note App's frontend architecture, design principles, and how its various components interact. This information is crucial for understanding the project's inner workings and for replicating its functionality on other platforms.
+This document provides a detailed explanation of the Note App's architecture, design principles, and how its various components interact. This information is crucial for understanding the project's inner workings and for replicating its functionality on other platforms.
 
 ## 1. Overall Architecture
 
-The Note App frontend is built with **SvelteKit**, a powerful framework for developing web applications using the Svelte component framework. It primarily operates as a **Single-Page Application (SPA)**, handling all user interface interactions, routing, and state management on the client side. While SvelteKit inherently supports Server-Side Rendering (SSR) for initial page loads, the core application logic and subsequent interactions are client-driven.
+The Note App is built with **SvelteKit**, a powerful framework for developing web applications using the Svelte component framework. It operates as a **Single-Page Application (SPA)**, handling all user interface interactions, routing, and state management on the client side. The backend is also built with SvelteKit, using API routes to handle data persistence.
 
-The frontend communicates with an external backend API (not part of this repository) to perform all data operations.
-
-- **Frontend (SvelteKit)**: Responsible for rendering the user interface, managing application state, handling client-side routing, and making API requests to the backend.
-- **Backend (External)**: Provides RESTful API endpoints for Create, Read, Update, and Delete (CRUD) operations on notes. For example, endpoints like `/api/notes/{path}` are used for fetching, saving, and deleting note content. The backend is expected to be running on `http://localhost:3000` and properly configured for CORS to allow requests from the frontend's origin (e.g., `http://localhost:5173`).
+- **Frontend (SvelteKit)**: Responsible for rendering the user interface, managing application state, and handling client-side routing.
+- **Backend (SvelteKit API Routes)**: Provides RESTful API endpoints for Create, Read, Update, and Delete (CRUD) operations on notes. The backend is part of the same SvelteKit project, and the API routes are located in `src/routes/api`.
 
 ## 2. Frontend Structure (SvelteKit Specifics)
 
@@ -20,6 +18,9 @@ The project adheres to the conventional SvelteKit directory structure, which pro
   - **`+page.svelte`**: Represents the primary content of a specific route.
     - `src/routes/+page.svelte`: This is the root page of the application. It likely displays the `NoteEditor` component, initially showing a default note (e.g., the content of `README.md` at the root).
     - `src/routes/notes/[...path]/+page.svelte`: This is a **dynamic route** that captures the remainder of the URL path after `/notes/`. The `[...path]` segment is a SvelteKit convention that allows it to handle arbitrary nested note paths (e.g., `/notes/work/project1/meeting-notes.md`). This page is responsible for fetching and displaying the content of the note corresponding to the dynamic URL segment. It also handles the logic for determining if a path refers to a directory (e.g., `/notes/work`) and automatically appends `/README.md` to the path for saving purposes, ensuring that directory notes are always saved as `README.md` files within that directory.
+  - **`src/routes/api/`**: This directory contains the backend API routes.
+    - `src/routes/api/notes/+server.ts`: Handles `GET` and `POST` requests for notes.
+    - `src/routes/api/notes/[...path]/+server.ts`: Handles `GET`, `PUT`, and `DELETE` requests for a specific note.
 - **`src/lib/`**: This directory serves as a repository for reusable Svelte components, utility functions, and application-wide stores that are not directly tied to a specific route.
   - **Svelte Components (`.svelte` files)**: These are modular, self-contained UI building blocks (e.g., `NoteEditor.svelte`, `NoteTree.svelte`).
   - **TypeScript Modules (`.ts` files)**: Contain business logic, data management stores, or helper functions (e.g., `noteStore.ts`, `themeStore.ts`).
@@ -57,7 +58,7 @@ The application is composed of several key Svelte components, each with a distin
     - After successful deletion of all items, it triggers a refresh of the note tree to reflect the changes.
 - **`src/lib/noteStore.ts`**:
   - **Purpose**: A Svelte store (specifically, a writable store) dedicated to managing application-wide state related to notes.
-  - **Functionality**: It holds the `backendUrl` which is used for all API calls to the backend. It also provides the `triggerRefresh` function, which is a mechanism to signal other components (like `NoteTree`) to re-fetch and update their data after a significant change (e.g., a note deletion or creation).
+  - **Functionality**: It provides the `triggerRefresh` function, which is a mechanism to signal other components (like `NoteTree`) to re-fetch and update their data after a significant change (e.g., a note deletion or creation).
 - **`src/lib/themeStore.ts`**:
   - **Purpose**: A Svelte store responsible for managing the application's visual theme (light or dark mode).
   - **Functionality**: It stores the current theme state and provides a mechanism to toggle between themes. This is typically achieved by adding or removing a specific CSS class (e.g., `dark-mode`) on the `<body>` or `<html>` element, which then activates different CSS variable values defined in `src/app.css`.
@@ -70,9 +71,9 @@ The application is composed of several key Svelte components, each with a distin
 The application's data flow is largely driven by user interactions and subsequent API calls to the backend:
 
 1.  **Initial Page Load/Navigation**: When a user accesses the application or navigates to a specific note path (e.g., `/notes/my-first-note`), the relevant SvelteKit page component (e.g., `src/routes/notes/[...path]/+page.svelte`) is activated.
-2.  **Fetching Note Content**: The activated page component initiates an `HTTP GET` request to the backend API (e.g., `${$backendUrl}/api/notes/my-first-note`) to retrieve the content of the specified note. If the path corresponds to a directory (e.g., `/notes/work`), the backend is expected to return the content of `work/README.md`.
+2.  **Fetching Note Content**: The activated page component initiates an `HTTP GET` request to the backend API (e.g., `/api/notes/my-first-note`) to retrieve the content of the specified note. If the path corresponds to a directory (e.g., `/notes/work`), the backend is expected to return the content of `work/README.md`.
 3.  **Displaying/Editing**: The fetched note content is then passed as a prop to the `NoteEditor.svelte` component, which renders it for viewing or editing.
-4.  **Saving Changes**: If a user modifies the note content in the `NoteEditor` and clicks "Save Note", the `onSave` callback function (provided by the parent page component) is invoked. This function constructs and sends an `HTTP PUT` request to the backend API (e.g., `${$backendUrl}/api/notes/my-first-note`) to persist the updated content. If a new note is being created or a directory's `README.md` is being saved, an `HTTP POST` request is sent to `${$backendUrl}/api/notes` with the `path` and `content` in the request body.
+4.  **Saving Changes**: If a user modifies the note content in the `NoteEditor` and clicks "Save Note", the `onSave` callback function (provided by the parent page component) is invoked. This function constructs and sends an `HTTP PUT` request to the backend API (e.g., `/api/notes/my-first-note`) to persist the updated content. If a new note is being created or a directory's `README.md` is being saved, an `HTTP POST` request is sent to `/api/notes` with the `path` and `content` in the request body.
 5.  **Deleting Notes**: When a user triggers a note deletion (e.g., via a "Delete Note" button in `NoteEditor`), the `onDelete` callback is executed. This typically triggers the display of the `DeletionProgress.svelte` modal for confirmation. Once confirmed, the `DeletionProgress` component sends one or more `HTTP DELETE` requests to the backend API for the specified notes or directories. After successful deletion, `noteStore.triggerRefresh()` is called to prompt the `NoteTree` and other relevant components to update their displayed data.
 6.  **Note Tree Updates**: The `NoteTree.svelte` component, often observing changes in `noteStore.ts`, is responsible for fetching and maintaining an up-to-date list of all notes and directories. It reflects any additions, modifications, or deletions made through the editor or other parts of the application.
 
