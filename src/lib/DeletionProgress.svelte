@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
-	import { backendUrl } from './noteStore';
 
 	export let directoryName: string;
 	export let filesToDelete: string[];
@@ -24,7 +23,7 @@
 			await new Promise((resolve) => setTimeout(resolve, 50));
 
 			try {
-				const response = await fetch(`${backendUrl}/api/notes/${file}`, { method: 'DELETE' });
+				const response = await fetch(`/api/notes/${file}`, { method: 'DELETE' });
 				if (!response.ok) {
 					throw new Error(`HTTP ${response.status}`);
 				}

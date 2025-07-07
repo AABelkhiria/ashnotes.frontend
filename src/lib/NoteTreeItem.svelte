@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { triggerRefresh, backendUrl } from './noteStore';
+	import { triggerRefresh } from './noteStore';
 	import DeletionProgress from './DeletionProgress.svelte';
 	import Icon from './Icon.svelte';
 	export let item: NoteItem;
@@ -36,7 +36,7 @@
 		const newNoteContent = `# ${newNoteName}`;
 
 		try {
-			const response = await fetch(`${backendUrl}/api/notes`, {
+			const response = await fetch(`/api/notes`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

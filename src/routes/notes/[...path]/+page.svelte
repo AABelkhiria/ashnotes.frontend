@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import NoteEditor from '$lib/NoteEditor.svelte';
-	import { triggerRefresh, backendUrl } from '$lib/noteStore';
+	import { triggerRefresh } from '$lib/noteStore';
 	import { goto } from '$app/navigation';
 
 	let noteContent: string | null = null;
@@ -29,7 +29,7 @@
 		isCreating = false;
 
 		try {
-			const response = await fetch(`${$backendUrl}/api/notes/${path}`);
+			const response = await fetch(`/api/notes/${path}`);
 			if (response.status === 404) {
 				noteContent = '';
 				const parentPath = getParentPath(path);
@@ -62,8 +62,8 @@
 		successMessage = null;
 		try {
 			const url = isCreating
-				? `${$backendUrl}/api/notes`
-				: `${$backendUrl}/api/notes/${notePathForSave}`;
+				? `/api/notes`
+				: `/api/notes/${notePathForSave}`;
 			const method = isCreating ? 'POST' : 'PUT';
 			const body = isCreating
 				? JSON.stringify({ path: notePathForSave, content })
@@ -101,7 +101,7 @@
 		errorMessage = null;
 		successMessage = null;
 		try {
-			const response = await fetch(`${$backendUrl}/api/notes/${notePathForSave}`, {
+			const response = await fetch(`/api/notes/${notePathForSave}`, {
 				method: 'DELETE'
 			});
 			if (!response.ok) {
@@ -115,16 +115,6 @@
 			console.error(errorMessage);
 		}
 	}
-
-	onMount(() => {
-		const unsubscribe = backendUrl.subscribe(() => {
-			if ($page.params.path) {
-				fetchNoteContent($page.params.path);
-			}
-		});
-
-		return unsubscribe;
-	});
 
 	$: if (
 		typeof window !== 'undefined' &&
